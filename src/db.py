@@ -10,7 +10,7 @@ class DB:
 
     @classmethod
     def insert_many(cls, data: list):
-        res = cls.collection.insert_many(data)
+        res = cls.collection.insert_many(data, bypass_document_validation=False)
         return res.acknowledged
 
     @classmethod
@@ -22,6 +22,15 @@ class DB:
         return res.acknowledged
 
     @classmethod
-    def get_detail_null_documents(cls, limit=30):
+    def get_detail_null_documents(cls, limit=1000 * 24):
         res = cls.collection.find({"detail": None}).limit(limit)
         return res if res else list()
+
+    @classmethod
+    def get_last_ads_id(cls, limit=1000 * 24):
+        res = cls.collection.find().sort("_id", -1).limit(limit)
+        output = list()
+        for obj in res:
+            ads_id = obj.get('id')
+            output.append(ads_id)
+        return output if output else list()
