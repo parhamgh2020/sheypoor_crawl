@@ -13,16 +13,6 @@ import base64 as b64
 import io
 from src.async_requests import run_fetch
 
-headers = {
-    'Accept-Encoding': 'gzip, deflate, sdch',
-    'Accept-Language': 'en-US,en;q=0.8',
-    'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Cache-Control': 'max-age=0',
-    'Connection': 'keep-alive',
-}
-
 
 class DetailPage:
 
@@ -31,7 +21,7 @@ class DetailPage:
         results = asyncio.run(run_fetch(urls))
         output = list()
         for http in results:
-            soup = BeautifulSoup(http.content, 'html.parser')
+            soup = BeautifulSoup(http, 'html.parser')
             output.append(soup)
         return output
 
@@ -57,14 +47,19 @@ class DetailPage:
         table = soup.find_all("table")
         output = dict()
         try:
+            for tr in table[0]:
+                if isinstance(tr, Tag):
+                    output.update(
+                        {cls._tag_data(tr.th.text): tr.td.text}
+                    )
             for tr in table[1]:
                 if isinstance(tr, Tag):
                     output.update(
                         {cls._tag_data(tr.th.text): tr.td.text}
                     )
+            output = {k: v for k, v in output.items() if k}
         except:
             print(traceback.format_exc())
-            breakpoint()
         return output
 
     @staticmethod
@@ -144,7 +139,6 @@ class DetailPage:
             elif img.attrs.get("data-srcset"):
                 images_list.append(img.attrs.get("data-srcset"))
         return images_list
-
 
     @classmethod
     def fetch_detail_page_data(cls, urls) -> List[dict]:
