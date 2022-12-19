@@ -1,4 +1,7 @@
+import asyncio
 import traceback
+from typing import List
+
 import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
@@ -8,6 +11,7 @@ import numpy as np
 from PIL import Image
 import base64 as b64
 import io
+from src.async_requests import run_fetch
 
 headers = {
     'Accept-Encoding': 'gzip, deflate, sdch',
@@ -20,16 +24,16 @@ headers = {
 }
 
 
-# url = "https://www.sheypoor.com/تیگو-7-پرو-مدل-1401-406669881.html"
-
-
 class DetailPage:
 
     @staticmethod
-    def _get_data_page(url) -> BeautifulSoup:
-        res = requests.get(url, headers=headers)
-        soup = BeautifulSoup(res.content, 'html.parser')
-        return soup
+    def _get_data_page(urls) -> List[BeautifulSoup]:
+        results = asyncio.run(run_fetch(urls))
+        output = list()
+        for http in results:
+            soup = BeautifulSoup(http.content, 'html.parser')
+            output.append(soup)
+        return output
 
     @staticmethod
     def _tag_data(data: str):
@@ -141,19 +145,23 @@ class DetailPage:
                 images_list.append(img.attrs.get("data-srcset"))
         return images_list
 
+
     @classmethod
-    def fetch_detail_page_data(cls, url) -> dict:
-        soup: BeautifulSoup = cls._get_data_page(url)
-        table_data: dict = cls._get_table_data(soup)
-        car_brand: str = cls._get_car_brand(soup)
-        description: str = cls._get_description(soup)
-        images: list = cls._get_images(soup)
-        output = {
-            "model": car_brand,
-            "text": description,
-            "images": images,
-        }
-        output.update(table_data)
+    def fetch_detail_page_data(cls, urls) -> List[dict]:
+        soups: List[BeautifulSoup] = cls._get_data_page(urls)
+        output = list()
+        for soup in soups:
+            table_data: dict = cls._get_table_data(soup)
+            car_brand: str = cls._get_car_brand(soup)
+            description: str = cls._get_description(soup)
+            images: list = cls._get_images(soup)
+            dct = {
+                "model": car_brand,
+                "text": description,
+                "images": images,
+            }
+            dct.update(table_data)
+            output.append(dct)
         return output
 
 

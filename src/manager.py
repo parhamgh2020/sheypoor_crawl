@@ -24,15 +24,16 @@ def first_step(i):
             history_id.append(obj.get("id"))
     if db_data:
         DB.insert_many(db_data)
-
+    # links = list()
     # for obj in data:
     #     url = obj.get('link')
-    #     detail = DetailPage.fetch_detail_page_data(url)
-    #     obj.update(detail)
-    #     db_data.append(obj)
-    #     pprint(obj)
-    # DB.insert_many(db_data)
-    # pprint(db_data)
+    #     links.append(url)
+    # details = DetailPage.fetch_detail_page_data(url)
+    # if len(details) != len(data):
+    #     raise Exception('not good')
+    # for i in range(len(data)):
+    #     data[i].update(details[i])
+    #     db_data.append(data[i])
 
 
 if __name__ == '__main__':
