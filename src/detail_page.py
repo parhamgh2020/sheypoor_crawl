@@ -133,9 +133,13 @@ class DetailPage:
 
     @staticmethod
     def _get_images(soup: BeautifulSoup):
-        breakpoint()
         images_div = soup.find_all("div", class_="swiper-container")[0].find_all("img")
-        images_list = [src.attr["data-srcset"] for src in images_div]
+        images_list = list()
+        for img in images_div:
+            if img.attrs.get("src"):
+                images_list.append(img.attrs.get("src"))
+            elif img.attrs.get("data-srcset"):
+                images_list.append(img.attrs.get("data-srcset"))
         return images_list
 
     @classmethod
